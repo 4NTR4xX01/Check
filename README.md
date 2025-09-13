@@ -1,4 +1,4 @@
-# Checker de Dominios Activos (por 4NTR4xX)
+# Checker de Dominios Activos
 
 Un script de Bash simple pero potente para verificar rápidamente el estado de una lista de dominios o subdominios. Automatiza el proceso de validación para identificar qué objetivos web están activos y son accesibles, ahorrando un tiempo considerable durante las fases de reconocimiento en auditorías de seguridad o pentesting.
 
@@ -28,7 +28,7 @@ Un script de Bash simple pero potente para verificar rápidamente el estado de u
     ```
 2.  Navega al directorio del proyecto:
     ```sh
-    cd check-tool
+    cd Check
     ```
 3.  Otorga permisos de ejecución al script:
     ```sh
