@@ -1,0 +1,72 @@
+#!/bin/bash
+
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+MAX_JOBS=20
+TIMEOUT=10
+
+usage() {
+    echo "Uso: $0 list.txt"
+    exit 1
+}
+
+if [ "$#" -ne 1 ]; then
+    usage
+fi
+
+INPUT_FILE="$1"
+
+if [ ! -f "$INPUT_FILE" ]; then
+    echo -e "${RED}[ERROR]${NC} El archivo '$INPUT_FILE' no existe."
+    exit 1
+fi
+
+
+check_domain() {
+    domain=$1
+    https_url="https://$domain"
+    
+    http_code=$(curl -s -L -o /dev/null -w '%{http_code}' --max-time $TIMEOUT "$https_url")
+    
+    if [ "$http_code" == "000" ]; then
+        http_url="http://$domain"
+        http_code=$(curl -s -L -o /dev/null -w '%{http_code}' --max-time $TIMEOUT "$http_url")
+        url_to_show=$http_url
+    else
+        url_to_show=$https_url
+    fi
+
+    
+    if [[ "$http_code" =~ ^2 ]]; then 
+        echo -e "[${GREEN}$http_code OK${NC}] \t $url_to_show"
+    elif [[ "$http_code" =~ ^3 ]]; then # 
+        final_url=$(curl -s -L -o /dev/null -w '%{url_effective}' --max-time $TIMEOUT "$url_to_show")
+        echo -e "[${YELLOW}$http_code REDIRECT${NC}] \t $url_to_show -> $final_url"
+    elif [[ "$http_code" =~ ^4 ]]; then #
+    
+        if [ "$http_code" == "403" ] || [ "$http_code" == "401" ]; then
+            echo -e "[${RED}$http_code FORBIDDEN/UNAUTHORIZED${NC}] \t $url_to_show"
+        fi
+    fi
+}
+
+
+export -f check_domain
+
+export TIMEOUT GREEN YELLOW RED NC
+
+echo "============================================="
+echo "        Check - by: 4NTR4xX"
+echo "============================================="
+echo "Iniciando escaneo de dominios en: $INPUT_FILE"
+echo "Procesos paralelos: $MAX_JOBS | Timeout: $TIMEOUT segundos"
+echo "---------------------------------------------"
+
+cat "$INPUT_FILE" | xargs -P $MAX_JOBS -I {} bash -c 'check_domain "{}"'
+
+echo "---------------------------------------------"
+echo "Escaneo completado."
+echo "============================================="
